@@ -1,0 +1,390 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Enhanced Image Text Extraction</title>
+    <!-- Bootstrap CSS for styling (optional, can be removed if pure CSS preferred) -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        canvas {
+            border: 1px solid #ccc;
+            cursor: crosshair;
+        }
+        .tag {
+            position: absolute;
+            padding: 2px 5px;
+            color: white;
+            font-size: 12px;
+            border-radius: 3px;
+        }
+        #container {
+            padding: 20px;
+        }
+        #imgdivision {
+            position: relative; /* Positioning context for tags */
+        }
+        /* Bootstrap alternatives if removed */
+        .bg-dark {
+            background-color: #212529;
+        }
+        .text-center {
+            text-align: center;
+        }
+        .text-light {
+            color: #f8f9fa;
+        }
+        .p-4 {
+            padding: 1.5rem;
+        }
+        .border-bottom {
+            border-bottom: 1px solid #dee2e6;
+        }
+        .form-control {
+            display: block;
+            width: 100%;
+            padding: 0.375rem 0.75rem;
+            font-size: 1rem;
+            border: 1px solid #ced4da;
+            border-radius: 0.25rem;
+        }
+        .w-50 {
+            width: 50%;
+        }
+        .mx-auto {
+            margin-left: auto;
+            margin-right: auto;
+        }
+        .btn {
+            display: inline-block;
+            padding: 0.375rem 0.75rem;
+            font-size: 1rem;
+            border-radius: 0.25rem;
+            cursor: pointer;
+        }
+        .btn-success {
+            background-color: #198754;
+            color: white;
+            border: 1px solid #198754;
+        }
+        .btn-danger {
+            background-color: #dc3545;
+            color: white;
+            border: 1px solid #dc3545;
+        }
+        .w-100 {
+            width: 100%;
+        }
+        .list-unstyled {
+            list-style: none;
+            padding-left: 0;
+        }
+        .mb-3 {
+            margin-bottom: 1rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="bg-dark text-center text-light p-4 border-bottom">
+      <div class="ms-auto me-0">
+        <a href="assets/project-setup.html" class="btn btn-danger ps-2">
+          <i class="px-2 ai-arrow-left fs-xl"></i>Go Back</a>
+      </div>
+        <h2>Upload Image to Extract Text</h2>
+        <input type="file" id="imageUpload" accept="image/*" class="form-control w-50 mx-auto">
+    </div>
+
+    <div id="container" class="container">
+        <div class="row">
+            <div id="imgdivision" class="col-6 border" style="display: none;">
+                <canvas id="imageCanvas"></canvas>
+            </div>
+            <div id="outputdivion" class="col-6 border" style="display: none;">
+                <p><strong>Tag Name:</strong></p>
+                <ul class="list-unstyled" id="areaList"></ul>
+                <div class="row d-flex p-2">
+                    <div class="col-6">
+                        <!-- Submit button remains in HTML but has no action -->
+                        <button class="btn btn-success w-100" id="submitBtn">Submit Template </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Global variables
+        let image = new Image();
+        let canvas = document.getElementById("imageCanvas");
+        let ctx = canvas.getContext("2d");
+        let selections = [];
+        let isDrawing = false;
+        let resizing = false;
+        let resizeIndex = -1;
+        let resizeHandle = "";
+        let startX, startY, endX, endY;
+
+        const canvasW = 600;
+        const canvasH = 600;
+        canvas.width = canvasW;
+        canvas.height = canvasH;
+        let scale, offsetX, offsetY;
+
+        // Setup canvas with fixed dimensions and scale image
+        function setupCanvas() {
+            const imgW = image.naturalWidth;
+            const imgH = image.naturalHeight;
+            const scaleW = canvasW / imgW;
+            const scaleH = canvasH / imgH;
+            scale = Math.min(scaleW, scaleH);
+            const scaledW = imgW * scale;
+            const scaledH = imgH * scale;
+            offsetX = (canvasW - scaledW) / 2;
+            offsetY = (canvasH - scaledH) / 2;
+            redrawSelections();
+        }
+
+        // Redraw canvas with scaled image and selections
+        function redrawSelections() {
+            ctx.clearRect(0, 0, canvasW, canvasH);
+            ctx.drawImage(image, offsetX, offsetY, image.naturalWidth * scale, image.naturalHeight * scale);
+
+            selections.forEach(selection => {
+                ctx.fillStyle = selection.color + "80"; // 50% opacity
+                ctx.fillRect(selection.x, selection.y, selection.width, selection.height);
+                ctx.strokeStyle = selection.color;
+                ctx.lineWidth = 2;
+                ctx.strokeRect(selection.x, selection.y, selection.width, selection.height);
+                drawResizeHandles(selection);
+            });
+        }
+
+        // Draw resize handles on selections
+        function drawResizeHandles(selection) {
+            const handleSize = 8;
+            ctx.fillStyle = "white";
+            ctx.strokeStyle = "black";
+            ctx.lineWidth = 1;
+            const handles = [
+                [selection.x - handleSize / 2, selection.y - handleSize / 2], // Top-left
+                [selection.x + selection.width - handleSize / 2, selection.y - handleSize / 2], // Top-right
+                [selection.x - handleSize / 2, selection.y + selection.height - handleSize / 2], // Bottom-left
+                [selection.x + selection.width - handleSize / 2, selection.y + selection.height - handleSize / 2] // Bottom-right
+            ];
+            handles.forEach(([x, y]) => {
+                ctx.fillRect(x, y, handleSize, handleSize);
+                ctx.strokeRect(x, y, handleSize, handleSize);
+            });
+        }
+
+        // Mouse down event: Start drawing or resizing
+        canvas.addEventListener("mousedown", (e) => {
+            let rect = canvas.getBoundingClientRect();
+            let mouseX = e.clientX - rect.left;
+            let mouseY = e.clientY - rect.top;
+
+            for (let i = 0; i < selections.length; i++) {
+                let sel = selections[i];
+                let handle = getResizeHandle(sel, mouseX, mouseY);
+                if (handle) {
+                    resizing = true;
+                    resizeIndex = i;
+                    resizeHandle = handle;
+                    return;
+                }
+            }
+
+            isDrawing = true;
+            startX = mouseX;
+            startY = mouseY;
+        });
+
+        // Detect which resize handle is clicked
+        function getResizeHandle(selection, mouseX, mouseY) {
+            const handleSize = 8;
+            if (Math.abs(mouseX - selection.x) < handleSize && Math.abs(mouseY - selection.y) < handleSize) return "top-left";
+            if (Math.abs(mouseX - (selection.x + selection.width)) < handleSize && Math.abs(mouseY - selection.y) < handleSize) return "top-right";
+            if (Math.abs(mouseX - selection.x) < handleSize && Math.abs(mouseY - (selection.y + selection.height)) < handleSize) return "bottom-left";
+            if (Math.abs(mouseX - (selection.x + selection.width)) < handleSize && Math.abs(mouseY - (selection.y + selection.height)) < handleSize) return "bottom-right";
+            return null;
+        }
+
+        // Mouse move event: Draw or resize
+        canvas.addEventListener("mousemove", (e) => {
+            let rect = canvas.getBoundingClientRect();
+            let mouseX = e.clientX - rect.left;
+            let mouseY = e.clientY - rect.top;
+
+            if (resizing) {
+                let sel = selections[resizeIndex];
+                if (resizeHandle === "top-left") {
+                    sel.width += sel.x - mouseX;
+                    sel.height += sel.y - mouseY;
+                    sel.x = mouseX;
+                    sel.y = mouseY;
+                } else if (resizeHandle === "top-right") {
+                    sel.width = mouseX - sel.x;
+                    sel.height += sel.y - mouseY;
+                    sel.y = mouseY;
+                } else if (resizeHandle === "bottom-left") {
+                    sel.width += sel.x - mouseX;
+                    sel.height = mouseY - sel.y;
+                    sel.x = mouseX;
+                } else if (resizeHandle === "bottom-right") {
+                    sel.width = mouseX - sel.x;
+                    sel.height = mouseY - sel.y;
+                }
+                redrawSelections();
+                return;
+            }
+
+            if (isDrawing) {
+                endX = mouseX;
+                endY = mouseY;
+                redrawSelections();
+                ctx.fillStyle = "rgba(0, 0, 255, 0.3)";
+                ctx.fillRect(startX, startY, endX - startX, endY - startY);
+                ctx.strokeStyle = "blue";
+                ctx.lineWidth = 2;
+                ctx.strokeRect(startX, startY, endX - startX, endY - startY);
+            }
+        });
+
+        // Mouse up event: Finalize selection or resize
+        canvas.addEventListener("mouseup", (e) => {
+            if (resizing) {
+                resizing = false;
+                resizeIndex = -1;
+                resizeHandle = "";
+                return;
+            }
+
+            if (isDrawing) {
+                isDrawing = false;
+                let finalStartX = Math.min(startX, endX);
+                let finalStartY = Math.min(startY, endY);
+                let finalEndX = Math.max(startX, endX);
+                let finalEndY = Math.max(startY, endY);
+                let width = finalEndX - finalStartX;
+                let height = finalEndY - finalStartY;
+
+                if (width < 10 || height < 10) {
+                    alert("Selection too small. Please select a larger area.");
+                    redrawSelections();
+                    return;
+                }
+
+                let tagName = "label" + (selections.length + 1);
+                let color = getRandomColor();
+
+                selections.push({
+                    x: finalStartX,
+                    y: finalStartY,
+                    width: width,
+                    height: height,
+                    tag: tagName,
+                    color: color
+                });
+
+                redrawSelections();
+
+                let tag = document.createElement("div");
+                tag.className = "tag";
+                tag.innerText = tagName;
+                tag.style.background = color;
+                tag.style.position = "absolute";
+                tag.style.left = `${finalStartX}px`;
+                tag.style.top = `${finalStartY - 25}px`;
+                document.getElementById("imgdivision").appendChild(tag);
+
+                let listItem = document.createElement("li");
+                listItem.style.display = "flex";
+                listItem.style.alignItems = "center";
+                listItem.style.gap = "10px";
+                listItem.style.marginBottom = "10px";
+
+                let textBox = document.createElement("input");
+                textBox.type = "text";
+                textBox.value = tagName;
+                textBox.className = "form-control";
+                textBox.style.width = "50%";
+                textBox.addEventListener("input", function() {
+                    let updatedTagName = textBox.value;
+                    tag.innerText = updatedTagName;
+                    let index = selections.findIndex(selection => selection.tag === tagName);
+                    if (index !== -1) {
+                        selections[index].tag = updatedTagName;
+                        tagName = updatedTagName;
+                    }
+                });
+
+                let deleteButton = document.createElement("button");
+                deleteButton.textContent = "Delete";
+                deleteButton.className = "btn btn-danger btn-sm";
+                deleteButton.addEventListener("click", () => {
+                    let index = selections.findIndex(selection => selection.tag === tagName);
+                    if (index !== -1) {
+                        selections.splice(index, 1);
+                    }
+                    redrawSelections();
+                    tag.remove();
+                    listItem.remove();
+                });
+
+                listItem.appendChild(textBox);
+                listItem.appendChild(deleteButton);
+                document.getElementById("areaList").appendChild(listItem);
+            }
+        });
+
+        // Generate random color for selections
+        function getRandomColor() {
+            const letters = "0123456789ABCDEF";
+            let color = "#";
+            for (let i = 0; i < 6; i++) {
+                color += letters[Math.floor(Math.random() * 16)];
+            }
+            return color;
+        }
+
+        // Update tag list with extracted text (kept for potential future use, but not called)
+        function updateTagWithText(tagName, text) {
+            const listItem = document.querySelector(`#areaList li input[value="${tagName}"]`).parentElement;
+            const textSpan = document.createElement("span");
+            textSpan.textContent = `: ${text}`;
+            textSpan.style.marginLeft = "10px";
+            listItem.appendChild(textSpan);
+        }
+
+        // Image upload handling
+        document.getElementById("imageUpload").addEventListener("change", function(event) {
+            let file = event.target.files[0];
+            if (!file) {
+                alert("Please select an image.");
+                return;
+            }
+            let reader = new FileReader();
+            reader.onload = function(e) {
+                image.src = e.target.result;
+                image.onload = function() {
+                    setupCanvas();
+                    document.getElementById("imgdivision").style.display = "block";
+                    document.getElementById("outputdivion").style.display = "block";
+                };
+            };
+            reader.onerror = function() {
+                alert("Failed to load the image. Please try again.");
+            };
+            reader.readAsDataURL(file);
+        });
+
+        // Submit button functionality
+        document.getElementById("submitBtn").addEventListener("click", function () {
+            let jsonData = JSON.stringify(selections);
+            localStorage.setItem("selectedAreas", jsonData);
+            window.location.href = "show.html";
+        });
+    </script>
+
+</body>
+</html>

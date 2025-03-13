@@ -1,0 +1,35 @@
+body {
+    font-family: Arial, sans-serif;
+    text-align: center;
+}
+#container {
+    position: relative;
+    display: inline-block;
+}
+#imageCanvas {
+    position: relative;
+    top: 0;
+    left: 0;
+    cursor: pointer;
+}
+.tag {
+    position: absolute;
+    padding: 5px;
+    font-size: 14px;
+    border-radius: 5px;
+    font-weight: bold;
+    pointer-events: none;
+    color: white;
+}
+#tempname {
+    margin-top: 20px;
+    font-weight: bold;
+}
+#output1 {
+    margin-top: 20px;
+    font-weight: bold;
+}
+#output2 {
+    margin-top: 20px;
+    font-weight: bold;
+}

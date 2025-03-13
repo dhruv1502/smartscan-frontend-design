@@ -1,0 +1,297 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en" data-bs-theme="light">
+  <head>
+    <meta charset="utf-8">
+
+    <!-- Viewport -->
+    <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1, maximum-scale=1, viewport-fit=cover">
+
+    <!-- SEO meta tags -->
+    <title>Task Setup</title>
+    <meta name="description" content="">
+    <meta name="keywords" content="">
+    <meta name="author" content="">
+
+    <!-- Webmanifest + Favicon / App icons -->
+    <link rel="icon" type="image/png" href="app-icons/icon-32x32.png" sizes="32x32">
+    <link rel="apple-touch-icon" href="app-icons/icon-180x180.png">
+
+    <!-- Theme switcher (color modes) -->
+    <script src="js/theme-switcher.js"></script>
+
+    <!-- Import Google font (Inter) -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet" id="google-font">
+
+    <!-- Font icons -->
+    <link rel="stylesheet" href="icons/around-icons.min.css">
+
+    <!-- Theme styles + Bootstrap -->
+    <link rel="stylesheet" media="screen" href="css/theme.css">
+
+    <!-- Page loading styles -->
+    <style>
+      .page-loading {
+        position: fixed;
+        top: 0;
+        right: 0;
+        bottom: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        -webkit-transition: all .4s .2s ease-in-out;
+        transition: all .4s .2s ease-in-out;
+        background-color: #fff;
+        opacity: 0;
+        visibility: hidden;
+        z-index: 9999;
+      }
+      [data-bs-theme="dark"] .page-loading {
+        background-color: #121519;
+      }
+      .page-loading.active {
+        opacity: 1;
+        visibility: visible;
+      }
+      .page-loading-inner {
+        position: absolute;
+        top: 50%;
+        left: 0;
+        width: 100%;
+        text-align: center;
+        -webkit-transform: translateY(-50%);
+        transform: translateY(-50%);
+        -webkit-transition: opacity .2s ease-in-out;
+        transition: opacity .2s ease-in-out;
+        opacity: 0;
+      }
+      .page-loading.active > .page-loading-inner {
+        opacity: 1;
+      }
+      .page-loading-inner > span {
+        display: block;
+        font-family: "Inter", sans-serif;
+        font-size: 1rem;
+        font-weight: normal;
+        color: #6f788b;
+      }
+      [data-bs-theme="dark"] .page-loading-inner > span {
+        color: #fff;
+        opacity: .6;
+      }
+      .page-spinner {
+        display: inline-block;
+        width: 2.75rem;
+        height: 2.75rem;
+        margin-bottom: .75rem;
+        vertical-align: text-bottom;
+        background-color: #d7dde2;
+        border-radius: 50%;
+        opacity: 0;
+        -webkit-animation: spinner .75s linear infinite;
+        animation: spinner .75s linear infinite;
+      }
+      [data-bs-theme="dark"] .page-spinner {
+        background-color: rgba(255,255,255,.25);
+      }
+      @-webkit-keyframes spinner {
+        0% {
+          -webkit-transform: scale(0);
+          transform: scale(0);
+        }
+        50% {
+          opacity: 1;
+          -webkit-transform: none;
+          transform: none;
+        }
+      }
+      @keyframes spinner {
+        0% {
+          -webkit-transform: scale(0);
+          transform: scale(0);
+        }
+        50% {
+          opacity: 1;
+          -webkit-transform: none;
+          transform: none;
+        }
+      }
+    </style>
+
+    <!-- Page loading scripts -->
+    <script>
+      (function () {
+        window.onload = function () {
+          const preloader = document.querySelector('.page-loading')
+          preloader.classList.remove('active')
+          setTimeout(function () {
+            preloader.remove()
+          }, 1500)
+        }
+      })()
+    </script>
+  </head>
+
+
+  <!-- Body -->
+  <body>
+
+
+    <!-- Page loading spinner -->
+    <div class="page-loading active">
+      <div class="page-loading-inner">
+        <div class="page-spinner"></div>
+        <span>Loading...</span>
+      </div>
+    </div>
+
+
+    <!-- Page wrapper -->
+    <main class="page-wrapper">
+
+      <!-- Page container -->
+      <div class="container-fluid px-5 pb-5 mb-lg-4 mb-xl-5">
+        <div class="row pt-sm-2 pt-lg-0">
+
+          <!-- Sidebar (offcanvas on sreens < 992px) -->
+          <aside class="col-lg-2 pe-lg-4 pe-xl-5 mt-n3">
+            <div class="position-lg-sticky top-0">
+              <div class="d-none d-lg-block" style="padding-top: 30px;"></div>
+              <div class="offcanvas-lg offcanvas-start" id="sidebarAccount">
+                <button class="btn-close position-absolute top-0 end-0 mt-3 me-3 d-lg-none" type="button" data-bs-dismiss="offcanvas" data-bs-target="#sidebarAccount" aria-label="Close"></button>
+                <div class="offcanvas-body">
+                  <div class="pb-2 pb-lg-0 mb-4 mb-lg-5">
+                    <h3 class="h3 fw-bold mb-1">Smart Scan</h3>
+                  </div>
+                  <nav class="nav flex-column pb-2 pb-lg-4 mb-3">
+                    <h4 class="fs-xs fw-medium text-body-secondary text-uppercase pb-1 mb-2">Account</h4>
+                    <a class="nav-link fw-semibold py-2 px-0 active" href="account-overview.html">
+                      <i class="ai-user-check fs-5 opacity-60 me-2"></i>
+                      Dashboard
+                    </a>
+                    <a class="nav-link fw-semibold py-2 px-0" href="account-settings.html">
+                      <i class="ai-settings fs-5 opacity-60 me-2"></i>
+                      Tasks
+                      <span class="badge bg-danger ms-auto">5</span>
+                    </a>
+                    <a class="nav-link fw-semibold py-2 px-0" href="account-billing.html">
+                      <i class="ai-wallet fs-5 opacity-60 me-2"></i>
+                      Export Extracts
+                    </a>
+                  </nav>
+                  <nav class="nav flex-column pb-2 pb-lg-4 mb-1">
+                    <h4 class="fs-xs fw-medium text-body-secondary text-uppercase pb-1 mb-2">Analysis</h4>
+                    <a class="nav-link fw-semibold py-2 px-0" href="account-orders.html">
+                      <i class="ai-cart fs-5 opacity-60 me-2"></i>
+                      Orders
+                    </a>
+                    <a class="nav-link fw-semibold py-2 px-0" href="account-earnings.html">
+                      <i class="ai-activity fs-5 opacity-60 me-2"></i>
+                      Earnings
+                    </a>
+                    <a class="nav-link fw-semibold py-2 px-0" href="account-chat.html">
+                      <i class="ai-messages fs-5 opacity-60 me-2"></i>
+                      Chat
+                      <span class="badge bg-danger ms-auto">4</span>
+                    </a>
+                    <a class="nav-link fw-semibold py-2 px-0" href="account-favorites.html">
+                      <i class="ai-heart fs-5 opacity-60 me-2"></i>
+                      Favorites
+                    </a>
+                  </nav>
+                  <nav class="nav flex-column">
+                    <a class="nav-link fw-semibold py-2 px-0" href="account-signin.html">
+                      <i class="ai-logout fs-5 opacity-60 me-2"></i>
+                      Sign out
+                    </a>
+                  </nav>
+                </div>
+              </div>
+            </div>
+          </aside>
+
+          <!-- Page content -->
+          <div class="col-lg-10 pt-4 pb-2 pb-sm-4">
+            <!-- Basic info -->
+            <section class="card border-0 p-md-2 px-xl-3 px-xxl-4 pb-md-2 pb-xl-3 pb-xxl-4 mb-4 pt-0">
+              <div class="card-body pt-0">
+                <div class="d-block align-items-center mb-0">
+                  <div class="d-flex">
+                    <div class="ms-auto me-0">
+                      <a href="project-page.html" class="btn btn-outline-dark ps-2">
+                        <i class="px-2 ai-arrow-left fs-xl"></i>Go Back</a>
+                    </div>
+                  </div>
+                  <div>
+                    <p class="fs-xl mb-1">Hello, {{ request.session.username }}!</p>
+                    <h2>New <span class="text-primary">Project</span> Setup</h2>
+                  </div>
+                </div>
+
+                <div class="container rounded border p-4 mb-3">
+                  <div class="row">
+                    <div class="col-5 fs-md fw-bold"><span for="name">Task Name:</span></div>
+                    <div class="col-6"><input type="text" class="form-control" id="cardFormat" placeholder="Task Name"></div>
+                  </div>
+                  <div class="row pt-3">
+                    <div class="col-5 fs-md fw-bold"><span for="name">Upload Files:</span></div>
+                    <!-- Upload Button -->
+                      <div class="col-6 pt-0 mt-0 mb-3">
+                        <input type="file" id="fileInput" class="d-none" multiple>
+                        <a href="#" class="btn btn-outline-info" onclick="document.getElementById('fileInput').click();">
+                          <i class="ai-download fs-xl"></i>&nbsp;&nbsp;Upload Files
+                        </a>
+                        <p id="fileNames" class="mt-2 text-muted"></p> <!-- Display selected file names -->
+                      </div>
+                    <div class="row">
+                      <div class="col-5">
+
+                      </div>
+                      <div class="d-flex col-6 pt-2 mt-2 mx-2">
+                        <a href="project-page.html" class="btn btn-outline-dark">Submit</a>
+                        <!-- <a href="#" class="btn btn-outline-dark ms-auto me-0">Start Processing</a> -->
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </section>
+          </div>
+        </div>
+      </div>
+
+      <!-- Sidebar toggle button -->
+      <button class="d-lg-none btn btn-sm fs-sm btn-primary w-100 rounded-0 fixed-bottom" type="button" data-bs-toggle="offcanvas" data-bs-target="#sidebarAccount">
+        <i class="ai-menu me-2"></i>
+        Account menu
+      </button>
+    </main>
+
+    <!-- Back to top button -->
+    <a class="btn-scroll-top" href="#top" data-scroll aria-label="Scroll back to top">
+      <svg viewBox="0 0 40 40" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+        <circle cx="20" cy="20" r="19" fill="none" stroke="currentColor" stroke-width="1.5" stroke-miterlimit="10"></circle>
+      </svg>
+      <i class="ai-arrow-up"></i>
+    </a>
+
+
+    <!-- Bootstrap + Theme scripts -->
+    <script src="js/theme.min.js"></script>
+
+  <!-- Upload files -->
+    <script>
+      document.getElementById('fileInput').addEventListener('change', function(event) {
+        const files = event.target.files;
+        let fileNames = [];
+        for (let i = 0; i < files.length; i++) {
+          fileNames.push(files[i].name);
+        }
+        document.getElementById('fileNames').textContent = "Selected Files: " + fileNames.join(', ');
+      });
+    </script>
+
+  </body>
+</html>
