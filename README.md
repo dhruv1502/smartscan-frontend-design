@@ -1,0 +1,1 @@
+# smartscan-frontend-design
